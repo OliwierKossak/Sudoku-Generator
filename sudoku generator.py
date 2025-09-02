@@ -1,9 +1,12 @@
 import random
 
+
 class Sudoku():
-    def __init__(self,population_number: int):
+
+    def __init__(self, population_number: int):
         self.population_number = population_number
         self.population = []
+
     def _init_sudoku_random_board(self):
         start_board = []
         '''Generates a starting board with randomly mixed numbers'''
@@ -15,7 +18,7 @@ class Sudoku():
 
     def print_board(self, board):
         '''Print sudoku board'''
-        for index, row in enumerate(board,1):
+        for index, row in enumerate(board):
             print(f"{index} : {row}")
 
     def generate_start_population(self):
@@ -26,10 +29,15 @@ class Sudoku():
 
     def evaluate_sudoku_board(self, board):
         board_score = 0
-        print(self._evalute_row(board))
-        print(self._evalute_column(board))
+        self.print_board(board)
+        row_score = self._evaluate_row(board)
+        column_score = self._evaluate_column(board)
+        matrix_score = self._evaluate_matrix3x3(board)
+        board_score = row_score + column_score + matrix_score
+        print(board_score)
+        return board_score
 
-    def _evalute_row(self, board):
+    def _evaluate_row(self, board):
         rows_score = 0
         for row in board:
             start_row_score = 45
@@ -38,9 +46,9 @@ class Sudoku():
             rows_score += abs(start_row_score)
         return rows_score
 
-    def _evalute_column(self, board):
+    def _evaluate_column(self, board):
         columns_score = 0
-        transpose_list = list(map(list,zip(*board)))
+        transpose_list = list(map(list, zip(*board)))
         for row in transpose_list:
             start_row_score = 45
             current_row_score = sum(row)
@@ -48,9 +56,28 @@ class Sudoku():
             columns_score += abs(start_row_score)
         return columns_score
 
+    def _evaluate_matrix3x3(self, board):
+
+        matrix_score = 0
+        for i in range(0, 9, 3):
+            for j in range(0, 9, 3):
+                start_martrix_score = 45
+                row1 = board[i][j: j + 3]
+                row2 = board[i + 1][j: j + 3]
+                row3 = board[i + 2][j: j + 3]
+                current_matrix_score = sum(row1) + sum(row2) + sum(row3)
+                start_martrix_score -= current_matrix_score
+                matrix_score += abs(start_martrix_score)
+                row1, row2, row3, start_martrix_score, current_matrix_score
+        return matrix_score
+
+
 sudoku = Sudoku(2)
 sudoku.generate_start_population()
-sudoku.evaluate_sudoku_board(sudoku.population[1])
+# sudoku.evaluate_sudoku_board(sudoku.population[0])
+print('*' * 40)
+sudoku.evaluate_sudoku_board(sudoku.population[0])
+print('*' * 40)
 for i in range(2):
     sudoku.print_board(sudoku.population[i])
-    print("-"*30)
+    print("-" * 30)
