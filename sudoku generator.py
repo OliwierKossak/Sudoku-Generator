@@ -29,12 +29,12 @@ class Sudoku():
 
     def evaluate_sudoku_board(self, board):
         board_score = 0
-        self.print_board(board)
+
         row_score = self._evaluate_row(board)
         column_score = self._evaluate_column(board)
         matrix_score = self._evaluate_matrix3x3(board)
         board_score = row_score + column_score + matrix_score
-        print(board_score)
+
         return board_score
 
     def _evaluate_row(self, board):
@@ -61,23 +61,49 @@ class Sudoku():
         matrix_score = 0
         for i in range(0, 9, 3):
             for j in range(0, 9, 3):
-                start_martrix_score = 45
+                start_matrix_score = 45
                 row1 = board[i][j: j + 3]
                 row2 = board[i + 1][j: j + 3]
                 row3 = board[i + 2][j: j + 3]
                 current_matrix_score = sum(row1) + sum(row2) + sum(row3)
-                start_martrix_score -= current_matrix_score
-                matrix_score += abs(start_martrix_score)
-                row1, row2, row3, start_martrix_score, current_matrix_score
+                start_matrix_score -= current_matrix_score
+                matrix_score += abs(start_matrix_score)
+                row1, row2, row3, start_matrix_score, current_matrix_score
         return matrix_score
 
+    def selection(self):
 
-sudoku = Sudoku(2)
+        for i in range(self.population_number//2):
+            board1 = self.population[i]
+            board2 = self.population[i + self.population_number//2]
+            board1_score = self.evaluate_sudoku_board(board1)
+            board2_score = self.evaluate_sudoku_board(board2)
+            print("="* 40)
+            self.print_board(board1)
+            print(board1_score)
+            print("=" * 40)
+            self.print_board(board2)
+            print(board2_score)
+
+            if board1_score > board2_score:
+                self.population[i] = board2
+            else:
+                self.population[i] = board1
+
+        random.shuffle(self.population)
+        print("+"* 45)
+        for board in self.population:
+            print("")
+            self.print_board(board)
+
+
+sudoku = Sudoku(4)
 sudoku.generate_start_population()
+sudoku.selection()
 # sudoku.evaluate_sudoku_board(sudoku.population[0])
-print('*' * 40)
-sudoku.evaluate_sudoku_board(sudoku.population[0])
-print('*' * 40)
-for i in range(2):
-    sudoku.print_board(sudoku.population[i])
-    print("-" * 30)
+# print('*' * 40)
+# sudoku.evaluate_sudoku_board(sudoku.population[0])
+# print('*' * 40)
+# for i in range(2):
+#     sudoku.print_board(sudoku.population[i])
+#     print("-" * 30)
