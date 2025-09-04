@@ -47,20 +47,20 @@ class Sudoku():
     def _evaluate_row(self, board: list[list[int]]):
         rows_score = 0
         for row in board:
-            start_row_score = 45
-            current_row_score = sum(row)
-            start_row_score -= current_row_score
-            rows_score += abs(start_row_score)
+            start_row_score = 9
+            current_row_distinct_numbers = len(set(row))
+            current_row_score = start_row_score - current_row_distinct_numbers
+            rows_score += abs(current_row_score)
         return rows_score
 
     def _evaluate_column(self, board: list[list[int]]):
         columns_score = 0
         transpose_list = list(map(list, zip(*board)))
         for row in transpose_list:
-            start_row_score = 45
-            current_row_score = sum(row)
-            start_row_score -= current_row_score
-            columns_score += abs(start_row_score)
+            start_row_score = 9
+            current_row_distinct_numbers = len(set(row))
+            current_row_score = start_row_score - current_row_distinct_numbers
+            columns_score += abs(current_row_score)
         return columns_score
 
     def _evaluate_matrix3x3(self, board: list[list[int]]):
@@ -68,15 +68,14 @@ class Sudoku():
         matrix_score = 0
         for i in range(0, 9, 3):
             for j in range(0, 9, 3):
-                start_matrix_score = 45
+                start_matrix_score = 9
                 row1 = board[i][j: j + 3]
                 row2 = board[i + 1][j: j + 3]
                 row3 = board[i + 2][j: j + 3]
-                current_matrix_score = sum(row1) + sum(row2) + sum(row3)
+                current_matrix_score = len(set(row1 + row2 + row3))
                 start_matrix_score -= current_matrix_score
                 matrix_score += abs(start_matrix_score)
-                row1, row2, row3, start_matrix_score, current_matrix_score
-        return matrix_score
+        return matrix_score *2
 
     def selection(self):
         current_lowest_score = 1000
@@ -100,6 +99,7 @@ class Sudoku():
                 current_lowest_score = board2_score
                 best_board = copy.deepcopy(board2)
 
+
         random.shuffle(self.population)
 
         return current_lowest_score, best_board
@@ -110,14 +110,14 @@ class Sudoku():
         return board1, board2
 
     def mutation(self, board: list[list[int]], mutation_chance: int = 0):
-        probability = [(100 - mutation_chance) / 100, mutation_chance / 100]
-        is_mutation = random.choices([False, True], weights=probability, k=1)
 
-        if is_mutation[0]:
-            random_column = random.randint(0, 8)
-            random_row = random.randint(0, 8)
-            new_value = random.randint(1, 9)
-            board[random_row][random_column] = new_value
+        for row_index in range(len(board)):
+            probability = [(100 - mutation_chance) / 100, mutation_chance / 100]
+            is_mutation = random.choices([False, True], weights=probability, k=1)
+            if is_mutation[0]:
+                random_column = random.randint(0, 8)
+                new_value = random.randint(1, 9)
+                board[row_index][random_column] = new_value
         return board
 
     def create_sudoku_board(self):
@@ -136,14 +136,16 @@ class Sudoku():
                 self.population[board_index + self.population_number // 2] = board2
 
             for board_index in range(self.population_number):
-                new_board = self.mutation(self.population[board_index], 25)
+                new_board = self.mutation(self.population[board_index], 8)
                 self.population[board_index] = new_board
 
             print(iter_count, population_lowest_score)
             iter_count += 1
-        print(best_board)
+        print(self._evaluate_matrix3x3(best_board))
+        self.print_board(best_board)
+        print(self.evaluate_sudoku_board(best_board))
 
-sudoku = Sudoku(1000, 250)
+sudoku = Sudoku(20000, 150)
 sudoku.create_sudoku_board()
 # sudoku.generate_start_population()
 # sudoku.cross_boards(sudoku.population[0], sudoku.population[1])
