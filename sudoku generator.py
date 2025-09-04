@@ -1,6 +1,7 @@
 import random
 import copy
 
+
 class Sudoku():
 
     def __init__(self, population_number: int, number_of_iteration: int):
@@ -75,42 +76,42 @@ class Sudoku():
                 current_matrix_score = len(set(row1 + row2 + row3))
                 start_matrix_score -= current_matrix_score
                 matrix_score += abs(start_matrix_score)
-        return matrix_score *2
+        return matrix_score
 
     def selection(self):
         current_lowest_score = 1000
         best_board = None
-        for i in range(self.population_number // 2):
+        for i in range(0, self.population_number, 4):
             board1 = self.population[i]
-            board2 = self.population[i + self.population_number // 2]
+            board2 = self.population[i + 1]
+            board3 = self.population[i + 2]
+            board4 = self.population[i + 3]
 
             board1_score = self.evaluate_sudoku_board(board1)
             board2_score = self.evaluate_sudoku_board(board2)
+            board3_score = self.evaluate_sudoku_board(board3)
+            board4_score = self.evaluate_sudoku_board(board4)
+            scores = [board1_score, board2_score, board3_score, board4_score]
+            lowest_score_index = scores.index(min(scores))
+            current_lowest_score = min([board1_score, board2_score, board3_score, board4_score])
+            self.population[i] = copy.deepcopy(self.population[i + lowest_score_index])
+            self.population[i + 1] = copy.deepcopy(self.population[i + lowest_score_index])
+            self.population[i + 2] = copy.deepcopy(self.population[i + lowest_score_index])
+            self.population[i + 3] = copy.deepcopy(self.population[i + lowest_score_index])
 
-            if board1_score > board2_score:
-                self.population[i] = copy.deepcopy(board2)
-            else:
-                self.population[i + self.population_number // 2] = copy.deepcopy(board1)
-
-            if current_lowest_score > board1_score:
-                current_lowest_score = board1_score
-                best_board = copy.deepcopy(board1)
-            elif current_lowest_score > board2_score:
-                current_lowest_score = board2_score
-                best_board = copy.deepcopy(board2)
-
+            best_board = copy.deepcopy(self.population[i + lowest_score_index])
 
         random.shuffle(self.population)
 
         return current_lowest_score, best_board
 
-    def cross_boards(self, board1: list[list[int]], board2: list[list[int]]):
 
+    def cross_boards(self, board1: list[list[int]], board2: list[list[int]]):
         board1, board2 = board1[:4] + board2[4:], board2[:4] + board1[4:]
         return board1, board2
 
-    def mutation(self, board: list[list[int]], mutation_chance: int = 0):
 
+    def mutation(self, board: list[list[int]], mutation_chance: int = 0):
         for row_index in range(len(board)):
             probability = [(100 - mutation_chance) / 100, mutation_chance / 100]
             is_mutation = random.choices([False, True], weights=probability, k=1)
@@ -120,13 +121,14 @@ class Sudoku():
                 board[row_index][random_column] = new_value
         return board
 
+
     def create_sudoku_board(self):
         self.generate_start_population()
         best_board = None
         population_lowest_score: int = None
         iter_count: int = 0
         while (population_lowest_score != 0) and (iter_count < self.number_of_iteration):
-            population_lowest_score,best_board  = self.selection()
+            population_lowest_score, best_board = self.selection()
 
             for board_index in range(self.population_number // 2):
                 board1 = self.population[board_index]
@@ -136,7 +138,7 @@ class Sudoku():
                 self.population[board_index + self.population_number // 2] = board2
 
             for board_index in range(self.population_number):
-                new_board = self.mutation(self.population[board_index], 8)
+                new_board = self.mutation(self.population[board_index], iter_count//15)
                 self.population[board_index] = new_board
 
             print(iter_count, population_lowest_score)
@@ -145,17 +147,6 @@ class Sudoku():
         self.print_board(best_board)
         print(self.evaluate_sudoku_board(best_board))
 
-sudoku = Sudoku(20000, 150)
+
+sudoku = Sudoku(15500, 300)
 sudoku.create_sudoku_board()
-# sudoku.generate_start_population()
-# sudoku.cross_boards(sudoku.population[0], sudoku.population[1])
-# sudoku.print_board(sudoku.population[1])
-# print('-'*40)
-# sudoku.mutation(sudoku.population[1])
-# sudoku.evaluate_sudoku_board(sudoku.population[0])
-# print('*' * 40)
-# sudoku.evaluate_sudoku_board(sudoku.population[0])
-# print('*' * 40)
-# for i in range(2):
-#     sudoku.print_board(sudoku.population[i])
-#     print("-" * 30)
